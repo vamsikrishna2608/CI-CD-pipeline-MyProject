@@ -1,0 +1,89 @@
+pipeline {
+    agent any
+    
+    environment {
+        AWS_ACCOUNT_ID = credentials('AWS_ACCOUNT_ID')
+        AWS_DEFAULT_REGION = 'us-east-1'
+        IMAGE_REPO_NAME = 'demo-app'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        REPOSITORY_URI = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+    }
+    
+    stages {
+        stage('Code Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                }
+            }
+        }
+        
+        stage('Build and SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn clean package sonar:sonar'
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
+        
+        stage('Push to ECR') {
+            steps {
+                script {
+                    sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+                    sh "docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}:${IMAGE_TAG}"
+                    sh "docker push ${REPOSITORY_URI}:${IMAGE_TAG}"
+                }
+            }
+        }
+        
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    sh "aws eks update-kubeconfig --name demo-cluster --region ${AWS_DEFAULT_REGION}"
+                    sh "kubectl apply -f kubernetes/deployments/"
+                    sh "kubectl set image deployments/demo-app demo-app=${REPOSITORY_URI}:${IMAGE_TAG}"
+                }
+            }
+        }
+        
+        stage('Verify Deployment') {
+            steps {
+                sh "kubectl rollout status deployment/demo-app"
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline succeeded! Application deployed successfully.'
+        }
+        failure {
+            echo 'Pipeline failed! Check logs for details.'
+        }
+    }
+}
