@@ -1,34 +1,34 @@
-# CI/CD Pipeline with Jenkins, Docker, Kubernetes, and AWS
+CI/CD Pipeline with Jenkins, Docker, Kubernetes, and AWS
 
 This project demonstrates a modern, automated CI/CD pipeline integrating industry-standard DevOps tools and practices.
 
-## Architecture Overview
+Architecture Overview
 
-![CI/CD Pipeline Architecture](docs/images/architecture.png)
+[CI/CD Pipeline Architecture](docs/images/architecture.png)
 
-### Key Components
+Key Components
 
-- **CI/CD Pipeline (Jenkins)**
+- CI/CD Pipeline (Jenkins)
   - Automated build, test, and deployment pipeline
   - GitHub webhook integration
   - Multi-stage pipeline with quality gates
   
-- **Containerization & Orchestration**
+- Containerization & Orchestration
   - Docker for application containerization
   - Kubernetes (AWS EKS) for container orchestration
   - AWS ECR for container registry
 
-- **Infrastructure as Code**
+- Infrastructure as Code
   - Terraform for AWS infrastructure provisioning
   - Kubernetes manifests for deployment configuration
   - Helm charts for package management
 
-- **Monitoring & Observability**
+- Monitoring & Observability
   - Prometheus for metrics collection
   - Grafana for visualization and dashboards
   - Alert management and notification system
 
-## Project Structure
+Project Structure
 
 ```
 .
@@ -50,29 +50,29 @@ This project demonstrates a modern, automated CI/CD pipeline integrating industr
 └── src/                       # Sample application source code
 ```
 
-## Prerequisites
+Prerequisites
 
 - AWS Account with appropriate permissions
 - GitHub account
 - Docker installed locally
-- kubectl installed locally
+- kubernetes installed locally
 - Terraform installed locally
 - AWS CLI configured
 
-## Setup Instructions
+Setup Instructions
 
-1. **Clone the Repository**
+1.Clone the Repository
    ```bash
    git clone https://github.com/yourusername/cicd-pipeline-demo.git
    cd cicd-pipeline-demo
    ```
 
-2. **Configure AWS Credentials**
+2.Configure AWS Credentials
    ```bash
    aws configure
    ```
 
-3. **Initialize Terraform**
+3. Initialize Terraform
    ```bash
    cd terraform
    terraform init
@@ -80,27 +80,21 @@ This project demonstrates a modern, automated CI/CD pipeline integrating industr
    terraform apply
    ```
 
-4. **Configure Jenkins**
+4. Configure Jenkins
    - Access Jenkins at http://jenkins-server-ip:8080
    - Install suggested plugins
    - Configure GitHub webhook
    - Add AWS credentials
 
-5. **Deploy Application**
+5. Deploy Application
    ```bash
    kubectl apply -f kubernetes/
    ```
 
-## Monitoring Setup
+ Monitoring Setup
 
 1. Access Grafana dashboard at http://grafana-ip:3000
 2. Import provided dashboards from monitoring/grafana/dashboards
-3. Configure alerting rules as needed
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
+3. Configure alerting rules as needed.
 
 Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
